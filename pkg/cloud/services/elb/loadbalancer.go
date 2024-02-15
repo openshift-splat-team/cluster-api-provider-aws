@@ -30,6 +30,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/elbv2"
 	rgapi "github.com/aws/aws-sdk-go/service/resourcegroupstaggingapi"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -281,13 +282,28 @@ func (s *Service) createLB(spec *infrav1.LoadBalancer, lbSpec *infrav1.AWSLoadBa
 	case infrav1.LoadBalancerTypeELB:
 		t = aws.String(elbv2.LoadBalancerTypeEnumGateway)
 	}
+
 	input := &elbv2.CreateLoadBalancerInput{
 		Name:           aws.String(spec.Name),
-		Subnets:        aws.StringSlice(spec.SubnetIDs),
 		Tags:           converters.MapToV2Tags(spec.Tags),
 		Scheme:         aws.String(string(spec.Scheme)),
 		SecurityGroups: aws.StringSlice(spec.SecurityGroupIDs),
 		Type:           t,
+	}
+
+	subnetMappings := []*elbv2.SubnetMapping{}
+	spew.Printf("%d subnet mappings and %d subnets\n", len(lbSpec.SubnetMappings), len(spec.SubnetIDs))
+	if len(lbSpec.SubnetMappings) >= len(spec.SubnetIDs) {
+		for idx, subnetMapping := range lbSpec.SubnetMappings {
+			subnetMappings = append(subnetMappings, &elbv2.SubnetMapping{
+				AllocationId: &subnetMapping.AllocationID,
+				SubnetId:     &spec.SubnetIDs[idx],
+			})
+		}
+
+		input.SubnetMappings = subnetMappings
+	} else {
+		input.Subnets = aws.StringSlice(spec.SubnetIDs)
 	}
 
 	if s.scope.VPC().IsIPv6Enabled() {
