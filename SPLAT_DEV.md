@@ -3,14 +3,14 @@
 1. Checkout https://github.com/openshift/installer/pull/7999/files
 2. Build the installer to include CAPI assets:
    ```sh
-SKIP_TERRAFORM=y OPENSHIFT_INSTALL_CLUSTER_API=1 ./hack/build.sh   
-```
+   SKIP_TERRAFORM=y OPENSHIFT_INSTALL_CLUSTER_API=1 ./hack/build.sh   
+   ```
 3. Construct an `install-config.yaml` which enables the required feature gate
    ```yaml
    featureSet: CustomNoUpgrade
    featureGates:
    - ClusterAPIInstall=true
-```
+   ```
 4. Install the cluster.
    Note: at this time no machines are created, only the CAPI and CAPA infrastructure manifests.  The AWSCluster resource is responsible for the creation of the public API load balancer.
 
