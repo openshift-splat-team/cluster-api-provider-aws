@@ -22,6 +22,9 @@ The installer builds and embeds CAPI provider binaries.  Since these binaries ar
 To build changes to the provider the CAPA binary is built and co pied in to the installer directory.  The installer is then built to incorporate the CAPA binary.
 
 ```sh
+cd ../cluster-api-provider-aws
+make binaries
+cd ../installer
 cp ../cluster-api-provider-aws/bin/manager cluster-api/bin/linux_amd64/cluster-api-provider-aws
 SKIP_TERRAFORM=y OPENSHIFT_INSTALL_CLUSTER_API=1 ./hack/build.sh
 ```
