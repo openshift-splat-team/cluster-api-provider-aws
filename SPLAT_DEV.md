@@ -29,6 +29,7 @@ cp ../cluster-api-provider-aws/bin/manager cluster-api/bin/linux_amd64/cluster-a
 SKIP_TERRAFORM=y OPENSHIFT_INSTALL_CLUSTER_API=1 ./hack/build.sh
 ```
 
+# Sample tasks.json from VScode
 ```json
 {
 
