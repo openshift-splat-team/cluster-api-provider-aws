@@ -37,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	infrav1 "sigs.k8s.io/cluster-api-provider-aws/v2/api/v1beta2"
+
 	"sigs.k8s.io/cluster-api-provider-aws/v2/pkg/cloud/awserrors"
 	"sigs.k8s.io/cluster-api-provider-aws/v2/pkg/cloud/converters"
 	"sigs.k8s.io/cluster-api-provider-aws/v2/pkg/cloud/scope"
@@ -266,6 +267,23 @@ func (s *Service) getAPIServerLBSpec(elbName string, lbSpec *infrav1.AWSLoadBala
 			}
 			res.AvailabilityZones = append(res.AvailabilityZones, sn.AvailabilityZone)
 			res.SubnetIDs = append(res.SubnetIDs, sn.GetResourceID())
+		}
+	}
+
+	// If the PublicIPv4Pool has been specified, allocate EIP and map to subnets
+	if lbSpec.PublicIPv4Pool != nil && len(lbSpec.SubnetMapping) == 0 {
+		for _, subnet := range res.SubnetIDs {
+			eipAlloc, err := s.EC2Client.AllocateAddress(&ec2.AllocateAddressInput{
+				Domain:         aws.StringPtr("vpc"),
+				PublicIpv4Pool: lbSpec.PublicIPv4Pool,
+			})
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to allocate address for the PublicIPv4Pool %s", *res.PublicIPv4Pool)
+			}
+			res.SubnetMappings = append(res.SubnetMappings, &infrav1.AWSSubnetMapping{
+				SubnetID:     subnet,
+				AllocationID: eipAlloc,
+			})
 		}
 	}
 

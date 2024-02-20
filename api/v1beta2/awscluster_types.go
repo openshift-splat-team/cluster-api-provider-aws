@@ -232,7 +232,8 @@ type AWSLoadBalancerSpec struct {
 	// you can specify one private IP address per subnet from the IPv4 range of
 	// the subnet. For internet-facing load balancer, you can specify one IPv6 address
 	// per subnet.
-	SubnetMappings []AWSSubnetMapping `json:"subnetMappings,list"`
+	SubnetMappings []AWSSubnetMapping `json:"subnetMapping,list"`
+	PublicIpv4Pool *string            `json:"publicIpv4Pool,omitempty"`
 
 	// HealthCheckProtocol sets the protocol type for ELB health check target
 	// default value is ELBProtocolSSL
