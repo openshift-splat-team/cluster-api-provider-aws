@@ -176,12 +176,12 @@ var (
 	LoadBalancerTypeDisabled = LoadBalancerType("disabled")
 )
 
-// AWSSubnetMapping associates an allocation ID with a subnet for consumption by services which
-// can consume an allocation ID.
-type AWSSubnetMapping struct {
-	AllocationID string `json:"allocationID,omitempty"`
-	SubnetID     string `json:"subnetID,omitempty"`
-}
+// // AWSSubnetMapping associates an allocation ID with a subnet for consumption by services which
+// // can consume an allocation ID.
+// type AWSSubnetMapping struct {
+// 	AllocationID string `json:"allocationID,omitempty"`
+// 	SubnetID     string `json:"subnetID,omitempty"`
+// }
 
 // AWSLoadBalancerSpec defines the desired state of an AWS load balancer.
 type AWSLoadBalancerSpec struct {
@@ -232,8 +232,8 @@ type AWSLoadBalancerSpec struct {
 	// you can specify one private IP address per subnet from the IPv4 range of
 	// the subnet. For internet-facing load balancer, you can specify one IPv6 address
 	// per subnet.
-	SubnetMappings []AWSSubnetMapping `json:"subnetMapping,list"`
-	PublicIpv4Pool *string            `json:"publicIpv4Pool,omitempty"`
+	// SubnetMappings []AWSSubnetMapping `json:"subnetMappings,list"`
+	PublicIpv4Pool *string `json:"publicIpv4Pool,omitempty"`
 
 	// HealthCheckProtocol sets the protocol type for ELB health check target
 	// default value is ELBProtocolSSL

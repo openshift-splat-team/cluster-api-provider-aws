@@ -223,12 +223,13 @@ func (s *Service) Delete(m *scope.MachineScope) error {
 }
 
 func (s *Service) createBucketIfNotExist(bucketName string) error {
-	input := &s3.CreateBucketInput{
-		Bucket: aws.String(bucketName),
-		CreateBucketConfiguration: &s3.CreateBucketConfiguration{
-			LocationConstraint: aws.String(s.scope.Region()),
-		},
-	}
+	input := &s3.CreateBucketInput{Bucket: aws.String(bucketName)}
+	// TODO fix me
+	// if s.scope.Region() != "us-east-1" {
+	// 	input.CreateBucketConfiguration = &s3.CreateBucketConfiguration{
+	// 		LocationConstraint: aws.String(s.scope.Region()),
+	// 	}
+	// }
 
 	_, err := s.S3Client.CreateBucket(input)
 	if err == nil {

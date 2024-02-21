@@ -139,6 +139,13 @@ type Listener struct {
 	TargetGroup TargetGroupSpec `json:"targetGroup"`
 }
 
+// // SubnetMapping associates an allocation ID with a subnet for consumption by services which
+// // can consume an allocation ID.
+// type SubnetMapping struct {
+// 	AllocationID string `json:"allocationID,omitempty"`
+// 	SubnetID     string `json:"subnetID,omitempty"`
+// }
+
 // LoadBalancer defines an AWS load balancer.
 type LoadBalancer struct {
 	// ARN of the load balancer. Unlike the ClassicLB, ARN is used mostly
@@ -185,6 +192,9 @@ type LoadBalancer struct {
 	// LoadBalancerType sets the type for a load balancer. The default type is classic.
 	// +kubebuilder:validation:Enum:=classic;elb;alb;nlb
 	LoadBalancerType LoadBalancerType `json:"loadBalancerType,omitempty"`
+
+	// PublicIpv4Pool string          `json:"publicIpv4Pool,omitempty"`
+	// SubnetMappings []SubnetMapping `json:"subnetMapping,list"`
 }
 
 // IsUnmanaged returns true if the Classic ELB is unmanaged.

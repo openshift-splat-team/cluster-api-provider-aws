@@ -168,6 +168,13 @@ func (s *Service) getAPIServerLBSpec(elbName string, lbSpec *infrav1.AWSLoadBala
 		securityGroupIDs = append(securityGroupIDs, s.scope.SecurityGroups()[infrav1.SecurityGroupAPIServerLB].ID)
 	}
 
+	// if len(lbSpec.Subnets) > 0 && len(lbSpec.SubnetMappings) > 0 {
+	// 	return nil, errors.New("Subnets and SubnetMappings can't be specified together.")
+	// }
+	// // If the PublicIPv4Pool has been specified, allocate EIP and map to subnets
+	// if lbSpec.PublicIpv4Pool != nil && len(lbSpec.SubnetMappings) > 0 {
+	// 	return nil, errors.New("PublicIpv4Pool and SubnetMappings are mutial exclusive")
+	// }
 	// Since we're no longer relying on s.scope.ControlPlaneLoadBalancerScheme to do the defaulting for us, do it here.
 	scheme := infrav1.ELBSchemeInternetFacing
 	if lbSpec != nil && lbSpec.Scheme != nil {
@@ -270,22 +277,24 @@ func (s *Service) getAPIServerLBSpec(elbName string, lbSpec *infrav1.AWSLoadBala
 		}
 	}
 
-	// If the PublicIPv4Pool has been specified, allocate EIP and map to subnets
-	if lbSpec.PublicIPv4Pool != nil && len(lbSpec.SubnetMapping) == 0 {
-		for _, subnet := range res.SubnetIDs {
-			eipAlloc, err := s.EC2Client.AllocateAddress(&ec2.AllocateAddressInput{
-				Domain:         aws.StringPtr("vpc"),
-				PublicIpv4Pool: lbSpec.PublicIPv4Pool,
-			})
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to allocate address for the PublicIPv4Pool %s", *res.PublicIPv4Pool)
-			}
-			res.SubnetMappings = append(res.SubnetMappings, &infrav1.AWSSubnetMapping{
-				SubnetID:     subnet,
-				AllocationID: eipAlloc,
-			})
-		}
-	}
+	// if lbSpec.PublicIpv4Pool != nil && len(lbSpec.SubnetMappings) == 0 {
+	// 	for _, subnet := range res.SubnetIDs {
+	// 		eipAlloc, err := s.EC2Client.AllocateAddress(&ec2.AllocateAddressInput{
+	// 			Domain:         aws.String("vpc"),
+	// 			PublicIpv4Pool: lbSpec.PublicIpv4Pool,
+	// 		})
+	// 		if err != nil {
+	// 			return nil, errors.Wrapf(err, "failed to allocate address for the PublicIPv4Pool %s", *res.PublicIPv4Pool)
+	// 		}
+	// 		res.SubnetMappings = append(res.SubnetMappings, &infrav1.AWSSubnetMapping{
+	// 			SubnetID:     subnet,
+	// 			AllocationID: aws.StringValue(eipAlloc.AllocationId),
+	// 		})
+	// 	}
+	// }
+	// if lbSpec.PublicIpv4Pool != nil && len(lbSpec.SubnetMappings) == 0 {
+	// 	res.PublicIpv4Pool = aws.StringValue(lbSpec.PublicIpv4Pool)
+	// }
 
 	return res, nil
 }
@@ -309,19 +318,60 @@ func (s *Service) createLB(spec *infrav1.LoadBalancer, lbSpec *infrav1.AWSLoadBa
 		Type:           t,
 	}
 
-	subnetMappings := []*elbv2.SubnetMapping{}
-	spew.Printf("%d subnet mappings and %d subnets\n", len(lbSpec.SubnetMappings), len(spec.SubnetIDs))
-	if len(lbSpec.SubnetMappings) >= len(spec.SubnetIDs) {
-		for idx, subnetMapping := range lbSpec.SubnetMappings {
-			subnetMappings = append(subnetMappings, &elbv2.SubnetMapping{
-				AllocationId: &subnetMapping.AllocationID,
-				SubnetId:     &spec.SubnetIDs[idx],
-			})
+	spew.Printf("pool %s, and %d subnets\n", lbSpec.PublicIpv4Pool, len(spec.SubnetIDs))
+	// // Subnet mapping takes precedence over subnet list
+	// if len(lbSpec.SubnetMappings) > 0 {
+	// 	for _, subnetMapping := range lbSpec.SubnetMappings {
+	// 		input.SubnetMappings = append(input.SubnetMappings, &elbv2.SubnetMapping{
+	// 			AllocationId: &subnetMapping.AllocationID,
+	// 			SubnetId:     &subnetMapping.SubnetID,
+	// 		})
+	// 	}
+	// } else {
+	// 	input.Subnets = aws.StringSlice(spec.SubnetIDs)
+	// }
+	// if we support in the future to specify the subnetmapping, change this, otherwise:
+	// if lbSpec.PublicIpv4Pool != nil && len(lbSpec.SubnetMappings) == 0 {
+	// if lbSpec.PublicIpv4Pool != nil {
+	// 	for _, subnet := range spec.SubnetIDs {
+	// 		eipAlloc, err := s.EC2Client.AllocateAddress(&ec2.AllocateAddressInput{
+	// 			Domain:         aws.String("vpc"),
+	// 			PublicIpv4Pool: lbSpec.PublicIpv4Pool,
+	// 		})
+	// 		if err != nil {
+	// 			return nil, errors.Wrapf(err, "failed to allocate address for the PublicIPv4Pool %s", *lbSpec.PublicIpv4Pool)
+	// 		}
+	// 		input.SubnetMappings = append(input.SubnetMappings, &elbv2.SubnetMapping{
+	// 			SubnetId:     aws.String(subnet),
+	// 			AllocationId: eipAlloc.AllocationId,
+	// 		})
+	// 	}
+	// } else {
+	// 	input.Subnets = aws.StringSlice(spec.SubnetIDs)
+	// }
+	TagSpecification := &ec2.TagSpecification{
+		ResourceType: aws.String("elastic-ip"),
+	}
+	for _, t := range input.Tags {
+		TagSpecification.Tags = append(TagSpecification.Tags, &ec2.Tag{
+			Key:   t.Key,
+			Value: t.Value,
+		})
+	}
+	TagSpecifications := []*ec2.TagSpecification{TagSpecification}
+	for _, subnet := range spec.SubnetIDs {
+		eipAlloc, err := s.EC2Client.AllocateAddress(&ec2.AllocateAddressInput{
+			Domain:            aws.String("vpc"),
+			PublicIpv4Pool:    aws.String("ipv4pool-ec2-09e5e971e86699d07"),
+			TagSpecifications: TagSpecifications,
+		})
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to allocate address for the PublicIPv4Pool: %v", lbSpec.PublicIpv4Pool)
 		}
-
-		input.SubnetMappings = subnetMappings
-	} else {
-		input.Subnets = aws.StringSlice(spec.SubnetIDs)
+		input.SubnetMappings = append(input.SubnetMappings, &elbv2.SubnetMapping{
+			SubnetId:     aws.String(subnet),
+			AllocationId: eipAlloc.AllocationId,
+		})
 	}
 
 	if s.scope.VPC().IsIPv6Enabled() {

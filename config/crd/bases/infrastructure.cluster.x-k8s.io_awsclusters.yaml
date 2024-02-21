@@ -1126,15 +1126,7 @@ spec:
                       of client ips must be retained or not. If this is enabled 6443
                       will be opened to 0.0.0.0/0.
                     type: boolean
-                  scheme:
-                    default: internet-facing
-                    description: Scheme sets the scheme of the load balancer (defaults
-                      to internet-facing)
-                    enum:
-                    - internet-facing
-                    - internal
-                    type: string
-                  subnetMappings:
+                  publicIpv4Pool:
                     description: "The IDs of the public subnets. You can specify only
                       one subnet per Availability Zone. You must specify either subnets
                       or subnet mappings. \n [Application Load Balancers] You must
@@ -1148,18 +1140,17 @@ spec:
                       static IP addresses for your internet-facing load balancer.
                       For internal load balancers, you can specify one private IP
                       address per subnet from the IPv4 range of the subnet. For internet-facing
-                      load balancer, you can specify one IPv6 address per subnet."
-                    items:
-                      description: AWSSubnetMapping associates an allocation ID with
-                        a subnet for consumption by services which can consume an
-                        allocation ID.
-                      properties:
-                        allocationID:
-                          type: string
-                        subnetID:
-                          type: string
-                      type: object
-                    type: array
+                      load balancer, you can specify one IPv6 address per subnet.
+                      SubnetMappings []AWSSubnetMapping `json:\"subnetMappings,list\"`"
+                    type: string
+                  scheme:
+                    default: internet-facing
+                    description: Scheme sets the scheme of the load balancer (defaults
+                      to internet-facing)
+                    enum:
+                    - internet-facing
+                    - internal
+                    type: string
                   subnets:
                     description: Subnets sets the subnets that should be applied to
                       the control plane load balancer (defaults to discovered subnets
@@ -1167,8 +1158,6 @@ spec:
                     items:
                       type: string
                     type: array
-                required:
-                - subnetMappings
                 type: object
               identityRef:
                 description: IdentityRef is a reference to an identity to be used
@@ -1736,15 +1725,7 @@ spec:
                       of client ips must be retained or not. If this is enabled 6443
                       will be opened to 0.0.0.0/0.
                     type: boolean
-                  scheme:
-                    default: internet-facing
-                    description: Scheme sets the scheme of the load balancer (defaults
-                      to internet-facing)
-                    enum:
-                    - internet-facing
-                    - internal
-                    type: string
-                  subnetMappings:
+                  publicIpv4Pool:
                     description: "The IDs of the public subnets. You can specify only
                       one subnet per Availability Zone. You must specify either subnets
                       or subnet mappings. \n [Application Load Balancers] You must
@@ -1758,18 +1739,17 @@ spec:
                       static IP addresses for your internet-facing load balancer.
                       For internal load balancers, you can specify one private IP
                       address per subnet from the IPv4 range of the subnet. For internet-facing
-                      load balancer, you can specify one IPv6 address per subnet."
-                    items:
-                      description: AWSSubnetMapping associates an allocation ID with
-                        a subnet for consumption by services which can consume an
-                        allocation ID.
-                      properties:
-                        allocationID:
-                          type: string
-                        subnetID:
-                          type: string
-                      type: object
-                    type: array
+                      load balancer, you can specify one IPv6 address per subnet.
+                      SubnetMappings []AWSSubnetMapping `json:\"subnetMappings,list\"`"
+                    type: string
+                  scheme:
+                    default: internet-facing
+                    description: Scheme sets the scheme of the load balancer (defaults
+                      to internet-facing)
+                    enum:
+                    - internet-facing
+                    - internal
+                    type: string
                   subnets:
                     description: Subnets sets the subnets that should be applied to
                       the control plane load balancer (defaults to discovered subnets
@@ -1777,8 +1757,6 @@ spec:
                     items:
                       type: string
                     type: array
-                required:
-                - subnetMappings
                 type: object
               sshKeyName:
                 description: SSHKeyName is the name of the ssh key to attach to the
