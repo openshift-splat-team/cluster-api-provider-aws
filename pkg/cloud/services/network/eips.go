@@ -63,7 +63,7 @@ func (s *Service) allocateAddress(role string) (string, error) {
 		TagSpecifications: []*ec2.TagSpecification{
 			tagSpecifications,
 		},
-		PublicIpv4Pool: aws.String("ipv4pool-ec2-09e5e971e86699d07"),
+		// PublicIpv4Pool: aws.String("ipv4pool-ec2-09e5e971e86699d07"),
 	})
 	if err != nil {
 		record.Warnf(s.scope.InfraCluster(), "FailedAllocateEIP", "Failed to allocate Elastic IP for %q: %v", role, err)

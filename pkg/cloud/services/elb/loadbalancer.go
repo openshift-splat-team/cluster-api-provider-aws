@@ -361,8 +361,8 @@ func (s *Service) createLB(spec *infrav1.LoadBalancer, lbSpec *infrav1.AWSLoadBa
 	TagSpecifications := []*ec2.TagSpecification{TagSpecification}
 	for _, subnet := range spec.SubnetIDs {
 		eipAlloc, err := s.EC2Client.AllocateAddress(&ec2.AllocateAddressInput{
-			Domain:            aws.String("vpc"),
-			PublicIpv4Pool:    aws.String("ipv4pool-ec2-09e5e971e86699d07"),
+			Domain: aws.String("vpc"),
+			// PublicIpv4Pool:    aws.String("ipv4pool-ec2-09e5e971e86699d07"),
 			TagSpecifications: TagSpecifications,
 		})
 		if err != nil {

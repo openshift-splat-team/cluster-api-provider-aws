@@ -150,6 +150,11 @@ spec:
                     maxLength: 32
                     pattern: ^[A-Za-z0-9]([A-Za-z0-9]{0,31}|[-A-Za-z0-9]{0,30}[A-Za-z0-9])$
                     type: string
+                  publicIpv4Pool:
+                    description: PublicIpv4Pool is an optional field that can be used
+                      to tell the installation process to use Public IPv4 address
+                      that you bring to your AWS account with BYOIP.
+                    type: string
                   scheme:
                     default: internet-facing
                     description: Scheme sets the scheme of the load balancer (defaults
@@ -371,6 +376,11 @@ spec:
                         type: object
                     type: object
                 type: object
+              publicIpv4Pool:
+                description: PublicIpv4Pool is an optional field that can be used
+                  to tell the installation process to use Public IPv4 address that
+                  you bring to your AWS account with BYOIP.
+                type: string
               region:
                 description: The AWS Region the cluster lives in.
                 type: string
@@ -1509,6 +1519,11 @@ spec:
               partition:
                 description: Partition is the AWS security partition being used. Defaults
                   to "aws"
+                type: string
+              publicIpv4Pool:
+                description: PublicIpv4Pool is an optional field that can be used
+                  to tell the installation process to use Public IPv4 address that
+                  you bring to your AWS account with BYOIP.
                 type: string
               region:
                 description: The AWS Region the cluster lives in.

@@ -99,6 +99,11 @@ type AWSClusterSpec struct {
 	// BootstrapFormatIgnition feature flag to be enabled).
 	// +optional
 	S3Bucket *S3Bucket `json:"s3Bucket,omitempty"`
+
+	// PublicIpv4Pool is an optional field that can be used to tell the installation process to use
+	// Public IPv4 address that you bring to your AWS account with BYOIP.
+	// +optional
+	PublicIpv4Pool string `json:"publicIpv4Pool,omitempty"`
 }
 
 // AWSIdentityKind defines allowed AWS identity types.
@@ -195,6 +200,11 @@ type AWSLoadBalancerSpec struct {
 	// This is optional - if not provided new security groups will be created for the load balancer
 	// +optional
 	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
+
+	// PublicIpv4Pool is an optional field that can be used to tell the installation process to use
+	// Public IPv4 address that you bring to your AWS account with BYOIP.
+	// +optional
+	PublicIpv4Pool string `json:"publicIpv4Pool,omitempty"`
 }
 
 // AWSClusterStatus defines the observed state of AWSCluster.
