@@ -33,17 +33,17 @@ import (
 )
 
 func (s *Service) getOrAllocateAddresses(num int, role string) (eips []string, err error) {
-	// out, err := s.describeAddresses(role)
-	// if err != nil {
-	// 	record.Eventf(s.scope.InfraCluster(), "FailedDescribeAddresses", "Failed to query addresses for role %q: %v", role, err)
-	// 	return nil, errors.Wrap(err, "failed to query addresses")
-	// }
+	out, err := s.describeAddresses(role)
+	if err != nil {
+		record.Eventf(s.scope.InfraCluster(), "FailedDescribeAddresses", "Failed to query addresses for role %q: %v", role, err)
+		return nil, errors.Wrap(err, "failed to query addresses")
+	}
 
-	// for _, address := range out.Addresses {
-	// 	if address.AssociationId == nil {
-	// 		eips = append(eips, aws.StringValue(address.AllocationId))
-	// 	}
-	// }
+	for _, address := range out.Addresses {
+		if address.AssociationId == nil {
+			eips = append(eips, aws.StringValue(address.AllocationId))
+		}
+	}
 
 	for len(eips) < num {
 		ip, err := s.allocateAddress(role)
