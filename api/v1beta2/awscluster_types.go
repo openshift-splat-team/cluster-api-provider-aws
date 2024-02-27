@@ -116,6 +116,12 @@ type AWSClusterSpec struct {
 	// Public IPv4 address that you bring to your AWS account with BYOIP.
 	// +optional
 	PublicIpv4Pool *string `json:"publicIpv4Pool,omitempty"`
+
+	// Ec2 is an optional field that can be used to tell the installation process to use
+	// Elastic IP address that had been previously created to assign to the resources with Public IPv4
+	// address created by installer.
+	// +optional
+	Ec2 *Ec2 `json:"ec2,omitempty"`
 }
 
 // AWSIdentityKind defines allowed AWS identity types.
@@ -278,12 +284,6 @@ type AWSLoadBalancerSpec struct {
 	// PreserveClientIP lets the user control if preservation of client ips must be retained or not.
 	// If this is enabled 6443 will be opened to 0.0.0.0/0.
 	PreserveClientIP bool `json:"preserveClientIP,omitempty"`
-
-	// Ec2 is an optional field that can be used to tell the installation process to use
-	// Elastic IP address that had been previously created to assign to the resources with Public IPv4
-	// address created by installer.
-	// +optional
-	Ec2 *Ec2 `json:"ec2,omitempty"`
 }
 
 // Ec2 store the configuration for services to

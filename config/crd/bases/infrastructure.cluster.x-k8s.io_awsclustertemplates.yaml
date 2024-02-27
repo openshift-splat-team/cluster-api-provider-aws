@@ -660,36 +660,6 @@ spec:
                               to the hosts file of each instance. This is by default,
                               false.
                             type: boolean
-                          ec2:
-                            description: Ec2 is an optional field that can be used
-                              to tell the installation process to use Elastic IP address
-                              that had been previously created to assign to the resources
-                              with Public IPv4 address created by installer.
-                            properties:
-                              elasticIp:
-                                description: ElasticIp is an optional field that can
-                                  be used to tell the installation process to use
-                                  Elastic IP address that had been previously created
-                                  to assign to the resources with Public IPv4 address
-                                  created by installer.
-                                properties:
-                                  allocatedIps:
-                                    description: ElasticIps is an optional field that
-                                      can be used to tell the installation process
-                                      to use Elastic IP address that had been previously
-                                      created to assign to the resources with Public
-                                      IPv4 address created by installer.
-                                    items:
-                                      type: string
-                                    type: array
-                                  publicIpv4Pool:
-                                    description: PublicIpv4Pool is an optional field
-                                      that can be used to tell the installation process
-                                      to use Public IPv4 address that you bring to
-                                      your AWS account with BYOIP.
-                                    type: string
-                                type: object
-                            type: object
                           healthCheckProtocol:
                             description: HealthCheckProtocol sets the protocol type
                               for ELB health check target default value is ELBProtocolSSL
@@ -852,6 +822,36 @@ spec:
                             items:
                               type: string
                             type: array
+                        type: object
+                      ec2:
+                        description: Ec2 is an optional field that can be used to
+                          tell the installation process to use Elastic IP address
+                          that had been previously created to assign to the resources
+                          with Public IPv4 address created by installer.
+                        properties:
+                          elasticIp:
+                            description: ElasticIp is an optional field that can be
+                              used to tell the installation process to use Elastic
+                              IP address that had been previously created to assign
+                              to the resources with Public IPv4 address created by
+                              installer.
+                            properties:
+                              allocatedIps:
+                                description: ElasticIps is an optional field that
+                                  can be used to tell the installation process to
+                                  use Elastic IP address that had been previously
+                                  created to assign to the resources with Public IPv4
+                                  address created by installer.
+                                items:
+                                  type: string
+                                type: array
+                              publicIpv4Pool:
+                                description: PublicIpv4Pool is an optional field that
+                                  can be used to tell the installation process to
+                                  use Public IPv4 address that you bring to your AWS
+                                  account with BYOIP.
+                                type: string
+                            type: object
                         type: object
                       identityRef:
                         description: IdentityRef is a reference to an identity to
@@ -1341,36 +1341,6 @@ spec:
                               to the hosts file of each instance. This is by default,
                               false.
                             type: boolean
-                          ec2:
-                            description: Ec2 is an optional field that can be used
-                              to tell the installation process to use Elastic IP address
-                              that had been previously created to assign to the resources
-                              with Public IPv4 address created by installer.
-                            properties:
-                              elasticIp:
-                                description: ElasticIp is an optional field that can
-                                  be used to tell the installation process to use
-                                  Elastic IP address that had been previously created
-                                  to assign to the resources with Public IPv4 address
-                                  created by installer.
-                                properties:
-                                  allocatedIps:
-                                    description: ElasticIps is an optional field that
-                                      can be used to tell the installation process
-                                      to use Elastic IP address that had been previously
-                                      created to assign to the resources with Public
-                                      IPv4 address created by installer.
-                                    items:
-                                      type: string
-                                    type: array
-                                  publicIpv4Pool:
-                                    description: PublicIpv4Pool is an optional field
-                                      that can be used to tell the installation process
-                                      to use Public IPv4 address that you bring to
-                                      your AWS account with BYOIP.
-                                    type: string
-                                type: object
-                            type: object
                           healthCheckProtocol:
                             description: HealthCheckProtocol sets the protocol type
                               for ELB health check target default value is ELBProtocolSSL

@@ -32,6 +32,36 @@ import (
 	"sigs.k8s.io/cluster-api-provider-aws/v2/pkg/record"
 )
 
+// func (s *Service) getEipConfig(infra *infrav1.AWSClusterSpec) (cfgEip *infrav1.Ec2ElasticIp, err error) {
+
+// 	if infra.Ec2 == nil {
+// 		return nil, nil
+// 	}
+
+// 	if infra.Ec2.ElasticIp == nil {
+// 		return nil, nil
+// 	}
+
+// 	return infra.Ec2.ElasticIp, nil
+// }
+
+// func (s *Service) GetOrAllocateAddressesFromBYOIP(infra *cloud.ClusterObject, num int) (eips []string, err error) {
+
+// 	// Get EIP custom configuration
+// 	cluster := infrav1.AWSClusterSpec(infra)
+// 	configEip, err := s.getEipConfig(cluster)
+// 	if err != nil {
+// 		record.Eventf(s.scope.InfraCluster(), "FailedDescribeAddresses", "Failed to query addresses for role %q: %v", role, err)
+// 		return nil, errors.Wrap(err, "failed to query addresses")
+// 	}
+
+// 	if configEip == nil {
+// 		return []string{}, nil
+// 	}
+
+// 	// TODO allocate address from BYOIP
+// }
+
 func (s *Service) getOrAllocateAddresses(num int, role string) (eips []string, err error) {
 	out, err := s.describeAddresses(role)
 	if err != nil {
@@ -39,9 +69,18 @@ func (s *Service) getOrAllocateAddresses(num int, role string) (eips []string, e
 		return nil, errors.Wrap(err, "failed to query addresses")
 	}
 
-	for _, address := range out.Addresses {
-		if address.AssociationId == nil {
-			eips = append(eips, aws.StringValue(address.AllocationId))
+	// Get custom EIPs from config or find unallocated EIPs
+	// byoEIPs, err := s.GetOrAllocateAddressesFromBYOIP(s.scope.InfraCluster(), num)
+	byoEIPs := []string{}
+	// if err != nil {
+	// 	// raise error from BYOIP
+	// }
+	if len(byoEIPs) < num {
+		// TODO fix
+		for _, address := range out.Addresses {
+			if address.AssociationId == nil {
+				eips = append(eips, aws.StringValue(address.AllocationId))
+			}
 		}
 	}
 
