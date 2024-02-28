@@ -243,12 +243,18 @@ type AWSLoadBalancerSpec struct {
 	// you can specify one private IP address per subnet from the IPv4 range of
 	// the subnet. For internet-facing load balancer, you can specify one IPv6 address
 	// per subnet.
-	SubnetMappings []AWSSubnetMapping `json:"subnetMappings,omitempty"`
+	SubnetMappings []*AWSSubnetMapping `json:"subnetMappings,omitempty"`
 
-	// PublicIpv4Pool is an optional field that can be used to tell the installation process to use
-	// Public IPv4 address that you bring to your AWS account with BYOIP.
+	// // PublicIpv4Pool is an optional field that can be used to tell the installation process to use
+	// // Public IPv4 address that you bring to your AWS account with BYOIP.
+	// // +optional
+	// PublicIpv4Pool *string `json:"publicIpv4Pool,omitempty"`
+
+	// ElasticIp is an optional field that can be used to tell the installation process to use
+	// Elastic IP address that had been previously created to assign to the resources with Public IPv4
+	// address created by installer.
 	// +optional
-	PublicIpv4Pool *string `json:"publicIpv4Pool,omitempty"`
+	ElasticIp *Ec2ElasticIp `json:"elasticIp,omitempty"`
 
 	// HealthCheckProtocol sets the protocol type for ELB health check target
 	// default value is ELBProtocolSSL
@@ -284,31 +290,6 @@ type AWSLoadBalancerSpec struct {
 	// PreserveClientIP lets the user control if preservation of client ips must be retained or not.
 	// If this is enabled 6443 will be opened to 0.0.0.0/0.
 	PreserveClientIP bool `json:"preserveClientIP,omitempty"`
-}
-
-// Ec2 store the configuration for services to
-// override existing defaults of AWS Services.
-type Ec2 struct {
-	// ElasticIp is an optional field that can be used to tell the installation process to use
-	// Elastic IP address that had been previously created to assign to the resources with Public IPv4
-	// address created by installer.
-	// +optional
-	ElasticIp *Ec2ElasticIp `json:"elasticIp,omitempty"`
-}
-
-// Ec2ElasticIp store the configuration for services to
-// override existing defaults of AWS Services.
-type Ec2ElasticIp struct {
-	// PublicIpv4Pool is an optional field that can be used to tell the installation process to use
-	// Public IPv4 address that you bring to your AWS account with BYOIP.
-	// +optional
-	PublicIpv4Pool string `json:"publicIpv4Pool,omitempty"`
-
-	// ElasticIps is an optional field that can be used to tell the installation process to use
-	// Elastic IP address that had been previously created to assign to the resources with Public IPv4
-	// address created by installer.
-	// +optional
-	AllocatedIps []string `json:"allocatedIps,omitempty"`
 }
 
 // AdditionalListenerSpec defines the desired state of an

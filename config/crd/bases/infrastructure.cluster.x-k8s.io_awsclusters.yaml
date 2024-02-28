@@ -1061,6 +1061,26 @@ spec:
                       solution that adds the NLB's address as 127.0.0.1 to the hosts
                       file of each instance. This is by default, false.
                     type: boolean
+                  elasticIp:
+                    description: ElasticIp is an optional field that can be used to
+                      tell the installation process to use Elastic IP address that
+                      had been previously created to assign to the resources with
+                      Public IPv4 address created by installer.
+                    properties:
+                      allocatedIps:
+                        description: ElasticIps is an optional field that can be used
+                          to tell the installation process to use Elastic IP address
+                          that had been previously created to assign to the resources
+                          with Public IPv4 address created by installer.
+                        items:
+                          type: string
+                        type: array
+                      publicIpv4Pool:
+                        description: PublicIpv4Pool is an optional field that can
+                          be used to tell the installation process to use Public IPv4
+                          address that you bring to your AWS account with BYOIP.
+                        type: string
+                    type: object
                   healthCheckProtocol:
                     description: HealthCheckProtocol sets the protocol type for ELB
                       health check target default value is ELBProtocolSSL
@@ -1170,11 +1190,6 @@ spec:
                       of client ips must be retained or not. If this is enabled 6443
                       will be opened to 0.0.0.0/0.
                     type: boolean
-                  publicIpv4Pool:
-                    description: PublicIpv4Pool is an optional field that can be used
-                      to tell the installation process to use Public IPv4 address
-                      that you bring to your AWS account with BYOIP.
-                    type: string
                   scheme:
                     default: internet-facing
                     description: Scheme sets the scheme of the load balancer (defaults
@@ -1397,6 +1412,26 @@ spec:
                           - toPort
                           type: object
                         type: array
+                    type: object
+                  elasticIp:
+                    description: ElasticIp is an optional field that can be used to
+                      tell the installation process to use Elastic IP address that
+                      had been previously created to assign to the resources with
+                      Public IPv4 address created by installer.
+                    properties:
+                      allocatedIps:
+                        description: ElasticIps is an optional field that can be used
+                          to tell the installation process to use Elastic IP address
+                          that had been previously created to assign to the resources
+                          with Public IPv4 address created by installer.
+                        items:
+                          type: string
+                        type: array
+                      publicIpv4Pool:
+                        description: PublicIpv4Pool is an optional field that can
+                          be used to tell the installation process to use Public IPv4
+                          address that you bring to your AWS account with BYOIP.
+                        type: string
                     type: object
                   securityGroupOverrides:
                     additionalProperties:
@@ -1706,6 +1741,26 @@ spec:
                       solution that adds the NLB's address as 127.0.0.1 to the hosts
                       file of each instance. This is by default, false.
                     type: boolean
+                  elasticIp:
+                    description: ElasticIp is an optional field that can be used to
+                      tell the installation process to use Elastic IP address that
+                      had been previously created to assign to the resources with
+                      Public IPv4 address created by installer.
+                    properties:
+                      allocatedIps:
+                        description: ElasticIps is an optional field that can be used
+                          to tell the installation process to use Elastic IP address
+                          that had been previously created to assign to the resources
+                          with Public IPv4 address created by installer.
+                        items:
+                          type: string
+                        type: array
+                      publicIpv4Pool:
+                        description: PublicIpv4Pool is an optional field that can
+                          be used to tell the installation process to use Public IPv4
+                          address that you bring to your AWS account with BYOIP.
+                        type: string
+                    type: object
                   healthCheckProtocol:
                     description: HealthCheckProtocol sets the protocol type for ELB
                       health check target default value is ELBProtocolSSL
@@ -1815,11 +1870,6 @@ spec:
                       of client ips must be retained or not. If this is enabled 6443
                       will be opened to 0.0.0.0/0.
                     type: boolean
-                  publicIpv4Pool:
-                    description: PublicIpv4Pool is an optional field that can be used
-                      to tell the installation process to use Public IPv4 address
-                      that you bring to your AWS account with BYOIP.
-                    type: string
                   scheme:
                     default: internet-facing
                     description: Scheme sets the scheme of the load balancer (defaults

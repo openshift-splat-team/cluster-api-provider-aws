@@ -581,13 +581,19 @@ func (in *AWSLoadBalancerSpec) DeepCopyInto(out *AWSLoadBalancerSpec) {
 	}
 	if in.SubnetMappings != nil {
 		in, out := &in.SubnetMappings, &out.SubnetMappings
-		*out = make([]AWSSubnetMapping, len(*in))
-		copy(*out, *in)
+		*out = make([]*AWSSubnetMapping, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = new(AWSSubnetMapping)
+				**out = **in
+			}
+		}
 	}
-	if in.PublicIpv4Pool != nil {
-		in, out := &in.PublicIpv4Pool, &out.PublicIpv4Pool
-		*out = new(string)
-		**out = **in
+	if in.ElasticIp != nil {
+		in, out := &in.ElasticIp, &out.ElasticIp
+		*out = new(Ec2ElasticIp)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.HealthCheckProtocol != nil {
 		in, out := &in.HealthCheckProtocol, &out.HealthCheckProtocol
@@ -1705,6 +1711,11 @@ func (in *NetworkSpec) DeepCopyInto(out *NetworkSpec) {
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
+	}
+	if in.ElasticIp != nil {
+		in, out := &in.ElasticIp, &out.ElasticIp
+		*out = new(Ec2ElasticIp)
+		(*in).DeepCopyInto(*out)
 	}
 }
 

@@ -32,58 +32,81 @@ import (
 	"sigs.k8s.io/cluster-api-provider-aws/v2/pkg/record"
 )
 
-// func (s *Service) getEipConfig(infra *infrav1.AWSClusterSpec) (cfgEip *infrav1.Ec2ElasticIp, err error) {
+// getEipConfig return EIP custom configuration when it is set in the AwsCluster object.
+func (s *Service) getEipConfig() (cfgEip *infrav1.Ec2ElasticIp, err error) {
 
-// 	if infra.Ec2 == nil {
-// 		return nil, nil
-// 	}
+	// // TODO: how to access the AWSCluster object configuration?
+	// scope := s.scope.Network()
+	// awscluster := s.scope.InfraCluster().(infrav1.AWSClusterSpec)
+	// if awscluster.Ec2 == nil {
+	// 	return nil, nil
+	// }
 
-// 	if infra.Ec2.ElasticIp == nil {
-// 		return nil, nil
-// 	}
+	// if awscluster.Ec2.ElasticIp == nil {
+	// 	return nil, nil
+	// }
 
-// 	return infra.Ec2.ElasticIp, nil
-// }
+	// return awscluster.Ec2.ElasticIp, nil
+	return nil, nil
+}
 
-// func (s *Service) GetOrAllocateAddressesFromBYOIP(infra *cloud.ClusterObject, num int) (eips []string, err error) {
+// GetOrAllocateAddressesFromBYOIP allocate EIPs from custom configuration.
+func (s *Service) getOrAllocateAddressesFromBYOIP(num int) (eips []string, err error) {
 
-// 	// Get EIP custom configuration
-// 	cluster := infrav1.AWSClusterSpec(infra)
-// 	configEip, err := s.getEipConfig(cluster)
-// 	if err != nil {
-// 		record.Eventf(s.scope.InfraCluster(), "FailedDescribeAddresses", "Failed to query addresses for role %q: %v", role, err)
-// 		return nil, errors.Wrap(err, "failed to query addresses")
-// 	}
+	// Get EIP custom configuration
+	eipConfig, err := s.getEipConfig()
+	if err != nil {
+		record.Eventf(s.scope.InfraCluster(), "FailedGetElasticIpConfig", "Failed to retrieve custom config for Elastic IP: %v", err)
+		return nil, errors.Wrap(err, "failed to query addresses")
+	}
 
-// 	if configEip == nil {
-// 		return []string{}, nil
-// 	}
+	if eipConfig == nil {
+		return eips, nil
+	}
 
-// 	// TODO allocate address from BYOIP
-// }
+	// TODO: consume user-provided EIP from config (eipConfig.AllocatedIps)
+	if len(eipConfig.AllocatedIps) > 0 {
+		// TODO validate if the EIP isn't allocated, and consume it to eips.
+	}
 
-func (s *Service) getOrAllocateAddresses(num int, role string) (eips []string, err error) {
+	// TODO allocate address from BYOIP
+	if eipConfig.PublicIpv4Pool == "" {
+		// TODO allocate EIP from custom BYOIP pool.
+	}
+
+	return eips, nil
+}
+
+// GetOrAllocateAddresses gather Elastic IPs from configuration (BYOIP), unassociated address,
+// and allocate when needed to ensure 'num' of EIPs.
+func (s *Service) GetOrAllocateAddresses(num int, role string) (eips []string, err error) {
+	// 1) Allocate from BYOIP
+	// Get custom EIPs from config
+	eips, err = s.getOrAllocateAddressesFromBYOIP(num)
+	if err != nil {
+		record.Eventf(s.scope.InfraCluster(), "FailedAllocateBYOIPAddresses", "Failed to allocate EIP from BYOIP: %v", err)
+		return nil, errors.Wrap(err, "failed to allocate BYOIP addresses")
+	}
+
+	// 2) Lookup unassigned EIPs
 	out, err := s.describeAddresses(role)
 	if err != nil {
 		record.Eventf(s.scope.InfraCluster(), "FailedDescribeAddresses", "Failed to query addresses for role %q: %v", role, err)
 		return nil, errors.Wrap(err, "failed to query addresses")
 	}
-
-	// Get custom EIPs from config or find unallocated EIPs
-	// byoEIPs, err := s.GetOrAllocateAddressesFromBYOIP(s.scope.InfraCluster(), num)
-	byoEIPs := []string{}
-	// if err != nil {
-	// 	// raise error from BYOIP
-	// }
-	if len(byoEIPs) < num {
+	if len(eips) < num {
 		// TODO fix
 		for _, address := range out.Addresses {
+			if len(eips) == num {
+				break
+			}
 			if address.AssociationId == nil {
 				eips = append(eips, aws.StringValue(address.AllocationId))
 			}
 		}
 	}
 
+	// 3) Allocate EIPs from Amazon-provided IP
 	for len(eips) < num {
 		ip, err := s.allocateAddress(role)
 		if err != nil {
