@@ -38,6 +38,9 @@ type ELBScope interface {
 	// VPC returns the cluster VPC.
 	VPC() *infrav1.VPCSpec
 
+	// VPC returns the ElasticIp configuration.
+	ElasticIp() *infrav1.Ec2ElasticIp
+
 	// ControlPlaneLoadBalancer returns the AWSLoadBalancerSpec
 	// Deprecated: Use ControlPlaneLoadBalancers()
 	ControlPlaneLoadBalancer() *infrav1.AWSLoadBalancerSpec

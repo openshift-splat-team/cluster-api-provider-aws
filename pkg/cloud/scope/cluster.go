@@ -119,6 +119,11 @@ func (s *ClusterScope) Subnets() infrav1.Subnets {
 	return s.AWSCluster.Spec.NetworkSpec.Subnets
 }
 
+// ElasticIp returns the Elastic IP configuration.
+func (s *ClusterScope) ElasticIp() *infrav1.Ec2ElasticIp {
+	return s.AWSCluster.Spec.NetworkSpec.ElasticIp
+}
+
 // IdentityRef returns the cluster identityRef.
 func (s *ClusterScope) IdentityRef() *infrav1.AWSIdentityReference {
 	return s.AWSCluster.Spec.IdentityRef

@@ -53,4 +53,7 @@ type NetworkScope interface {
 	SetNatGatewaysIPs(ips []string)
 	// GetNatGatewaysIPs gets the Nat Gateways Public IPs.
 	GetNatGatewaysIPs() []string
+
+	// VPC returns the ElasticIp configuration.
+	ElasticIp() *infrav1.Ec2ElasticIp
 }

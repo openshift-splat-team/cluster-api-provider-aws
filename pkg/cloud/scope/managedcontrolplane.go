@@ -440,3 +440,8 @@ func (s *ManagedControlPlaneScope) Partition() string {
 func (s *ManagedControlPlaneScope) AdditionalControlPlaneIngressRules() []infrav1.IngressRule {
 	return nil
 }
+
+// ElasticIp returns custom elastic IP confng.
+func (s *ManagedControlPlaneScope) ElasticIp() *infrav1.Ec2ElasticIp {
+	return nil
+}

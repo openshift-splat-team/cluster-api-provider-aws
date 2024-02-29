@@ -61,6 +61,7 @@ func (eip *Ec2ElasticIp) getOrAllocateAddressesFromBYOIP(sess ec2iface.EC2API, n
 			eips = append(eips, *eipState.AllocationId)
 		}
 	}
+	// reached the requested EIP
 	if len(eips) >= num {
 		fmt.Printf(">> TODO(awsec2.eip.BYOIP): nothing todo more, found all requested #1.\n")
 		return eips, nil
@@ -88,8 +89,13 @@ func (eip *Ec2ElasticIp) GetOrAllocateAddresses(sess ec2iface.EC2API, num int, r
 		return nil, errors.Wrap(err, "failed to allocate BYOIP addresses")
 	}
 
+	if len(eips) >= num {
+		fmt.Printf(">> TODO(awsec2.eip.BYOIP): nothing todo more, found all requested #1.\n")
+		return eips, nil
+	}
+
 	// 2) Lookup unassigned EIPs
-	fmt.Printf(">> TODO(awsec2.eip): 2) Lookup unassigned EIPs.\n")
+	fmt.Printf(">> TODO(awsec2.eip): 2) Lookup unassigned EIPs. eips(%d)\n", len(eips))
 	out, err := eip.describeAddresses(sess, "TBD", role)
 	if err != nil {
 		// record.Eventf(s.scope.InfraCluster(), "FailedDescribeAddresses", "Failed to query addresses for role %q: %v", role, err)
@@ -122,12 +128,12 @@ func (eip *Ec2ElasticIp) GetOrAllocateAddresses(sess ec2iface.EC2API, num int, r
 
 }
 
-type Ec2AllocateAddressInput struct {
-	Client       ec2iface.EC2API
-	Tags         ec2.TagSpecification
-	Filter       ec2.Filter
-	RequestCount int
-}
+// type Ec2AllocateAddressInput struct {
+// 	Client       ec2iface.EC2API
+// 	Tags         ec2.TagSpecification
+// 	Filter       ec2.Filter
+// 	RequestCount int
+// }
 
 func (eip *Ec2ElasticIp) allocateAddress(sess ec2iface.EC2API, role *string) (string, error) {
 	// tagSpecifications := tags.BuildParamsToTagSpecification(ec2.ResourceTypeElasticIp, s.getEIPTagParams(role))

@@ -217,7 +217,7 @@ func (s *Service) getNatGatewayTagParams(id string) infrav1.BuildParams {
 }
 
 func (s *Service) createNatGateways(subnetIDs []string) (natgateways []*ec2.NatGateway, err error) {
-	eips, err := s.GetOrAllocateAddresses(len(subnetIDs), "natgw")
+	eips, err := s.scope.ElasticIp().GetOrAllocateAddresses(s.EC2Client, len(subnetIDs), aws.String("natgw"))
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create one or more IP addresses for NAT gateways")
 	}

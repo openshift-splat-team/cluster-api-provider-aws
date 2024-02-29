@@ -301,8 +301,8 @@ func (s *Service) getAPIServerLBSpec(elbName string, lbSpec *infrav1.AWSLoadBala
 	eipsFree := []string{}
 	var err error
 	eipRequestCount := len(lbSpec.SubnetMappings) - allocatedEips
-	if eipRequestCount > 0 && lbSpec.ElasticIp != nil {
-		eipsFree, err = lbSpec.ElasticIp.GetOrAllocateAddresses(s.EC2Client, eipRequestCount, aws.String(infrav1.APIServerRoleTagValue))
+	if eipRequestCount > 0 && s.scope.ElasticIp() != nil {
+		eipsFree, err = s.scope.ElasticIp().GetOrAllocateAddresses(s.EC2Client, eipRequestCount, aws.String(infrav1.APIServerRoleTagValue))
 		if err != nil {
 			// TODO return error when allocating BYOIP
 			fmt.Printf(">> ERROR: GetOrAllocateAddresses() : %v\n", err)
