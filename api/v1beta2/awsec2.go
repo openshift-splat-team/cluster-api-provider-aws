@@ -11,16 +11,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Ec2 store the configuration for services to
-// override existing defaults of AWS Services.
-type Ec2 struct {
-	// ElasticIp is an optional field that can be used to tell the installation process to use
-	// Elastic IP address that had been previously created to assign to the resources with Public IPv4
-	// address created by installer.
-	// +optional
-	ElasticIp *Ec2ElasticIp `json:"elasticIp,omitempty"`
-}
-
 // Ec2ElasticIp store the configuration for services to
 // override existing defaults of AWS Services.
 type Ec2ElasticIp struct {
@@ -55,7 +45,7 @@ func (eip *Ec2ElasticIp) getOrAllocateAddressesFromBYOIP(sess ec2iface.EC2API, n
 		}
 		for _, eipState := range eipsState.Addresses {
 			if eipState.AssociationId != nil {
-				fmt.Printf(">> ERROR EIP %v is already associated to %v, ignoring from the used pool\n", *eipState.AllocationId, *eipState.AssociationId)
+				fmt.Printf(">> WARN EIP %v is already associated to %v, ignoring from the used pool\n", *eipState.AllocationId, *eipState.AssociationId)
 				continue
 			}
 			eips = append(eips, *eipState.AllocationId)
@@ -64,6 +54,7 @@ func (eip *Ec2ElasticIp) getOrAllocateAddressesFromBYOIP(sess ec2iface.EC2API, n
 	// reached the requested EIP
 	if len(eips) >= num {
 		fmt.Printf(">> TODO(awsec2.eip.BYOIP): nothing todo more, found all requested #1.\n")
+		fmt.Printf(">> preAlloc pool size(%d) requested(%d) consumed(%d)\n", len(eip.AllocatedIps), num, len(eips))
 		return eips, nil
 	}
 	// TODO allocate address from BYOIP
@@ -78,6 +69,7 @@ func (eip *Ec2ElasticIp) getOrAllocateAddressesFromBYOIP(sess ec2iface.EC2API, n
 	return eips, nil
 }
 
+// GetOrAllocateAddresses reuse or allocate N*(num) Elastic IPs requested by resource provisioner.
 func (eip *Ec2ElasticIp) GetOrAllocateAddresses(sess ec2iface.EC2API, num int, role *string) (eips []string, err error) {
 
 	// 1) Allocate from BYOIP
@@ -116,6 +108,7 @@ func (eip *Ec2ElasticIp) GetOrAllocateAddresses(sess ec2iface.EC2API, num int, r
 
 	// 3) Allocate EIPs from Amazon-provided IP
 	fmt.Printf(">> TODO(awsec2.eip): 3) Allocate EIPs from Amazon-provided IP.\n")
+	fmt.Printf(">> requested(%d) total to allocated(%d)\n", num, num-len(eips))
 	for len(eips) < num {
 		ip, err := eip.allocateAddress(sess, role)
 		if err != nil {
@@ -129,7 +122,6 @@ func (eip *Ec2ElasticIp) GetOrAllocateAddresses(sess ec2iface.EC2API, num int, r
 }
 
 // type Ec2AllocateAddressInput struct {
-// 	Client       ec2iface.EC2API
 // 	Tags         ec2.TagSpecification
 // 	Filter       ec2.Filter
 // 	RequestCount int

@@ -99,10 +99,9 @@ type AWSClusterSpec struct {
 	// +optional
 	Bastion Bastion `json:"bastion"`
 
-	// +optional
-
 	// IdentityRef is a reference to an identity to be used when reconciling the managed control plane.
 	// If no identity is specified, the default identity for this controller will be used.
+	// +optional
 	IdentityRef *AWSIdentityReference `json:"identityRef,omitempty"`
 
 	// S3Bucket contains options to configure a supporting S3 bucket for this
@@ -111,17 +110,6 @@ type AWSClusterSpec struct {
 	// BootstrapFormatIgnition feature flag to be enabled).
 	// +optional
 	S3Bucket *S3Bucket `json:"s3Bucket,omitempty"`
-
-	// PublicIpv4Pool is an optional field that can be used to tell the installation process to use
-	// Public IPv4 address that you bring to your AWS account with BYOIP.
-	// +optional
-	PublicIpv4Pool *string `json:"publicIpv4Pool,omitempty"`
-
-	// Ec2 is an optional field that can be used to tell the installation process to use
-	// Elastic IP address that had been previously created to assign to the resources with Public IPv4
-	// address created by installer.
-	// +optional
-	Ec2 *Ec2 `json:"ec2,omitempty"`
 }
 
 // AWSIdentityKind defines allowed AWS identity types.
@@ -242,19 +230,8 @@ type AWSLoadBalancerSpec struct {
 	// IP addresses for your internet-facing load balancer. For internal load balancers,
 	// you can specify one private IP address per subnet from the IPv4 range of
 	// the subnet. For internet-facing load balancer, you can specify one IPv6 address
-	// per subnet.
+	// // per subnet.
 	SubnetMappings []*AWSSubnetMapping `json:"subnetMappings,omitempty"`
-
-	// // PublicIpv4Pool is an optional field that can be used to tell the installation process to use
-	// // Public IPv4 address that you bring to your AWS account with BYOIP.
-	// // +optional
-	// PublicIpv4Pool *string `json:"publicIpv4Pool,omitempty"`
-
-	// ElasticIp is an optional field that can be used to tell the installation process to use
-	// Elastic IP address that had been previously created to assign to the resources with Public IPv4
-	// address created by installer.
-	// +optional
-	ElasticIp *Ec2ElasticIp `json:"elasticIp,omitempty"`
 
 	// HealthCheckProtocol sets the protocol type for ELB health check target
 	// default value is ELBProtocolSSL
