@@ -277,12 +277,14 @@ func (s *Service) getAPIServerLBSpec(elbName string, lbSpec *infrav1.AWSLoadBala
 		}
 	}
 
+	spew.Printf("lbSpec: %v\n", lbSpec)
 	// Create subnet mapping when not persent
 	if len(lbSpec.SubnetMappings) == 0 {
 		for _, subnet := range res.SubnetIDs {
-			lbSpec.SubnetMappings = append(lbSpec.SubnetMappings, &infrav1.AWSSubnetMapping{
-				SubnetID: subnet,
-			})
+			sbm := &infrav1.AWSSubnetMapping{
+				SubnetID: aws.String(subnet),
+			}
+			lbSpec.SubnetMappings = append(lbSpec.SubnetMappings, sbm)
 		}
 	}
 
@@ -291,10 +293,11 @@ func (s *Service) getAPIServerLBSpec(elbName string, lbSpec *infrav1.AWSLoadBala
 	// 2) Check if there is custom config (BYOIP)
 	allocatedEips := int(0)
 	for _, subMap := range lbSpec.SubnetMappings {
-		if subMap.AllocationID == "" {
+		if subMap.AllocationID != nil {
 			allocatedEips += 1
 		}
 	}
+	spew.Printf("mapping(%d): %v\n", len(lbSpec.SubnetMappings), lbSpec.SubnetMappings)
 	eipsFree := []string{}
 	var err error
 	eipRequestCount := len(lbSpec.SubnetMappings) - allocatedEips
@@ -302,15 +305,29 @@ func (s *Service) getAPIServerLBSpec(elbName string, lbSpec *infrav1.AWSLoadBala
 		eipsFree, err = lbSpec.ElasticIp.GetOrAllocateAddresses(s.EC2Client, eipRequestCount, aws.String(infrav1.APIServerRoleTagValue))
 		if err != nil {
 			// TODO return error when allocating BYOIP
+			fmt.Printf(">> ERROR: GetOrAllocateAddresses() : %v\n", err)
 		}
 	}
+	spew.Printf("\n allocatedEips(%d) eipRequestCount(%d) eipsFree(%d)\n", allocatedEips, eipRequestCount, len(eipsFree))
 	eipsFreeIndex := 0
+
 	for _, subMap := range lbSpec.SubnetMappings {
-		if subMap.AllocationID == "" {
-			if len(eipsFree) >= eipsFreeIndex {
+		if len(eipsFree) == 0 {
+			// TODO return error of index out of range
+			fmt.Printf(">> ERROR: SHOULD NOT HAPPEN: no EIPs to be allocated\n")
+			break
+		}
+		if eipsFreeIndex == len(eipsFree) {
+			fmt.Printf(">> WARN/INFO?: Reached the limit of available free EIPs pool\n")
+			break
+		}
+		if subMap.AllocationID == nil {
+			if eipsFreeIndex >= len(eipsFree) {
 				// TODO return error of index out of range
+				fmt.Printf(">> ERROR: len(eipsFree) >= eipsFreeIndex\n")
+				continue
 			}
-			subMap.AllocationID = eipsFree[eipsFreeIndex]
+			subMap.AllocationID = aws.String(eipsFree[eipsFreeIndex])
 			eipsFreeIndex += 1
 			continue
 		}
@@ -397,6 +414,7 @@ func (s *Service) createLB(spec *infrav1.LoadBalancer, lbSpec *infrav1.AWSLoadBa
 			Value: t.Value,
 		})
 	}
+	spew.Printf("TagSpecification: %v\n", TagSpecification)
 	// TagSpecifications := []*ec2.TagSpecification{TagSpecification}
 	// for _, subnet := range spec.SubnetIDs {
 	// 	eipAlloc, err := s.EC2Client.AllocateAddress(&ec2.AllocateAddressInput{
@@ -415,8 +433,8 @@ func (s *Service) createLB(spec *infrav1.LoadBalancer, lbSpec *infrav1.AWSLoadBa
 	// input.SubnetMappings = lbSpec.SubnetMappings
 	for _, sb := range lbSpec.SubnetMappings {
 		input.SubnetMappings = append(input.SubnetMappings, &elbv2.SubnetMapping{
-			SubnetId:     aws.String(sb.SubnetID),
-			AllocationId: &sb.AllocationID,
+			SubnetId:     sb.SubnetID,
+			AllocationId: sb.AllocationID,
 		})
 	}
 	spew.Printf("createLB - map(%d): %v\n", len(input.SubnetMappings), input.SubnetMappings)

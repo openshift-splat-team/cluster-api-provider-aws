@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 )
 
@@ -41,13 +42,37 @@ func (eip *Ec2ElasticIp) getOrAllocateAddressesFromBYOIP(sess ec2iface.EC2API, n
 	// TODO: consume user-provided EIP from config (eipConfig.AllocatedIps)
 	if len(eip.AllocatedIps) > 0 {
 		// TODO validate if the EIP isn't allocated, and consume it to eips.
+		fmt.Printf(">> TODO(awsec2.eip.BYOIP): Consuming EIPs from pre-conf\n")
+		// TODO check if all EIPs are unassigned, then add to the pool
+		eipsState, err := sess.DescribeAddressesWithContext(context.TODO(), &ec2.DescribeAddressesInput{
+			Filters: []*ec2.Filter{{
+				Name:   aws.String("allocation-id"),
+				Values: aws.StringSlice(eip.AllocatedIps),
+			}},
+		})
+		if err != nil {
+			fmt.Printf(">> ERROR listing existing EIP pool: %v\n", err)
+		}
+		for _, eipState := range eipsState.Addresses {
+			if eipState.AssociationId != nil {
+				fmt.Printf(">> ERROR EIP %v is already associated to %v, ignoring from the used pool\n", *eipState.AllocationId, *eipState.AssociationId)
+				continue
+			}
+			eips = append(eips, *eipState.AllocationId)
+		}
 	}
-
-	// TODO allocate address from BYOIP
-	if eip.PublicIpv4Pool == "" {
+	if len(eips) >= num {
+		fmt.Printf(">> TODO(awsec2.eip.BYOIP): nothing todo more, found all requested #1.\n")
 		return eips, nil
 	}
+	// TODO allocate address from BYOIP
+	if eip.PublicIpv4Pool == "" {
+		fmt.Printf(">> TODO(awsec2.eip.BYOIP): nothing todo more, no publi pool.\n")
+		return eips, nil
+	}
+
 	// TODO allocate EIP from custom BYOIP pool.
+	fmt.Printf(">> TODO(awsec2.eip.BYOIP): allocate EIP from custom BYOIP pool.\n")
 
 	return eips, nil
 }
@@ -56,6 +81,7 @@ func (eip *Ec2ElasticIp) GetOrAllocateAddresses(sess ec2iface.EC2API, num int, r
 
 	// 1) Allocate from BYOIP
 	// Get custom EIPs from config
+	fmt.Printf(">> TODO(awsec2.eip): 1) getOrAllocateAddressesFromBYOIP()\n")
 	eips, err = eip.getOrAllocateAddressesFromBYOIP(sess, num)
 	if err != nil {
 		// record.Eventf(s.scope.InfraCluster(), "FailedAllocateBYOIPAddresses", "Failed to allocate EIP from BYOIP: %v", err)
@@ -63,11 +89,13 @@ func (eip *Ec2ElasticIp) GetOrAllocateAddresses(sess ec2iface.EC2API, num int, r
 	}
 
 	// 2) Lookup unassigned EIPs
+	fmt.Printf(">> TODO(awsec2.eip): 2) Lookup unassigned EIPs.\n")
 	out, err := eip.describeAddresses(sess, "TBD", role)
 	if err != nil {
 		// record.Eventf(s.scope.InfraCluster(), "FailedDescribeAddresses", "Failed to query addresses for role %q: %v", role, err)
 		return nil, errors.Wrap(err, "failed to query addresses")
 	}
+	spew.Printf("\n out(%d): %v\n", len(out.Addresses), out)
 	if len(eips) < num {
 		// TODO fix
 		for _, address := range out.Addresses {
@@ -81,6 +109,7 @@ func (eip *Ec2ElasticIp) GetOrAllocateAddresses(sess ec2iface.EC2API, num int, r
 	}
 
 	// 3) Allocate EIPs from Amazon-provided IP
+	fmt.Printf(">> TODO(awsec2.eip): 3) Allocate EIPs from Amazon-provided IP.\n")
 	for len(eips) < num {
 		ip, err := eip.allocateAddress(sess, role)
 		if err != nil {
@@ -88,9 +117,16 @@ func (eip *Ec2ElasticIp) GetOrAllocateAddresses(sess ec2iface.EC2API, num int, r
 		}
 		eips = append(eips, ip)
 	}
-
+	spew.Printf("\n eips(%d): %v\n", len(eips), eips)
 	return eips, nil
 
+}
+
+type Ec2AllocateAddressInput struct {
+	Client       ec2iface.EC2API
+	Tags         ec2.TagSpecification
+	Filter       ec2.Filter
+	RequestCount int
 }
 
 func (eip *Ec2ElasticIp) allocateAddress(sess ec2iface.EC2API, role *string) (string, error) {
